@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Download Image</title>
+    </head>
+    <body>
+        <div>
+            <div style="text-align:center;">
+                <input type="text" placeholder="Please select a file" id="actual-file" disabled="disabled"/>
+                <input type="button" value="Choose a file" id="select-file"/>
+            </div>
+            <div style="text-align:center;">
+                <input type="text" placeholder="Please select a dir" id="actual-dir" disabled="disabled"/>
+                <input type="button" value="Choose a Dir" id="select-dir"/>
+            </div>
+            <br><br>
+            <textarea id="content-editor" rows="10"></textarea><br><br>
+            <ul id="log"></ul>
+            <input type="button" id="save-changes" value="Save changes"/>
+            <input type="button" id="delete-file" value="Delete file"/>
+        </div>
+        <hr>
+        <div style="text-align:center;">
+            <p>
+                The file content will be the same as the editor.
+            </p>
+            <input type="button" value="Choose a file" id="create-new-file"/>
+            <input type="button" value="START" id="start-file"/>
+            <script>
+            const {dialog} = require('electron').remote
+            const {remote} = require('electron')
+            const {Menu} = remote
+            const request = require('sync-request');
+            const fs = require('fs');
+            
+            let file = [];
+            let dir = []; 
+            console.log(dir)
+            document.getElementById('start-file').addEventListener('click',function() {
+                console.log(file, dir);
+                function readFile(nameFile) {
+                    fs.readFile(nameFile, 'utf8', function(err, contents) {
+                        if (!err) {
+                            readLine(contents.split('\n'));
+                        } else {
+                            console.log('Ошибка', err);
+                        }
+                    });
+                }
+                
+                function readLine(array) {
+                    array.forEach(function(uri) {
+                        var img_name = decodeURIComponent(uri.split('/').slice(-1))
+                        var res = request("GET", uri);
+                        fs.writeFileSync(dir[0] + '/' + img_name, res.body);
+                        console.log(img_name, ' OK')
+                    });
+                }
+                console.log(file[0])
+                readFile(file[0]);
+            }, false);
+                         
+            document.getElementById('select-dir').addEventListener('click',function() {
+                dialog.showOpenDialog({properties: ['openDirectory']}, function (fileNames) {
+                    if(fileNames === undefined) {
+                        console.log("No file selected");
+                    } else {
+                        console.log(fileNames);
+                        dir.push(fileNames[0]);
+                        console.log(dir);
+                        document.getElementById("actual-dir").value = fileNames[0];
+                        // readFile(fileNames[0]);
+                    }
+                }); 
+            }, false);
+            
+            document.getElementById('select-file').addEventListener('click',function() {
+                dialog.showOpenDialog({properties: ['openFile'], filters: [{name: "File", extensions: ['txt']}]}, function (fileNames) {
+                    if(fileNames === undefined) {
+                        console.log("No file selected");
+                    } else {
+                        console.log(fileNames)
+                        file.push(fileNames[0]);
+                        document.getElementById("actual-file").value = fileNames[0];
+                        readFile(fileNames[0]);
+                    }
+                }); 
+            }, false);
+            
+            function readFile(filepath) {
+                fs.readFile(filepath, 'utf-8', function (err, data) {
+                    if(err){
+                        alert("An error ocurred reading the file :" + err.message);
+                        return;
+                    }
+                    document.getElementById("content-editor").value = data;
+                });
+            };
+            </script>
+        </div>
+    </body>
+</html>

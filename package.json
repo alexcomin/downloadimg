@@ -1,0 +1,16 @@
+{
+  "name": "downloadimg",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "sync-request": "^3.0.1",
+    "request": "^2.74.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "electron ."
+  },
+  "author": "Alex Comin",
+  "license": "MIT"
+}
