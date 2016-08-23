@@ -19,33 +19,48 @@
             <ul id="log"></ul>
         </div>
             <script>
-            const {dialog} = require('electron').remote
-            const {remote} = require('electron')
-            const {Menu} = remote
+            const {dialog, Menu} = require('electron').remote
+            const {ipcRenderer} = require('electron');
             const request = require('sync-request');
             const fs = require('fs');
+            
+            const menu = Menu.buildFromTemplate([
+                {
+                    label: 'Справка',
+                    submenu: [
+                        {
+                            label: 'О программе',
+                            click () {
+                                ipcRenderer.sendSync('open')
+                            }
+                        }
+                     ]
+                 }
+            ]);
+            
+            Menu.setApplicationMenu(menu);
             
             let file = [];
             let dir = []; 
             console.log(dir)
             
             function write(text) {
-                var li = log.appendChild(document.createElement('li'));
+                let li = log.appendChild(document.createElement('li'));
                 li.innerHTML = text;
             }
             
             function createBut() {
-                var button = document.createElement('input')
+                let button = document.createElement('input')
                 button.type = 'button';
                 button.value = 'Начать';
                 button.id = 'start-file';
-                button.onclick = function () {
+                button.addEventListener('click', function () {
                     start();
-                };
+                })
                 create.appendChild(button);
             }
                 
-            var i = 0
+            let i = 0
             function start() {
                 function readFile(nameFile) {
                     fs.readFile(nameFile, 'utf8', function(err, contents) {
@@ -59,12 +74,16 @@
                 
                 function readLine(array) {
                     array.forEach(function(uri) {
-                        var img_name = decodeURIComponent(uri.split('/').slice(-1))
-                        var res = request("GET", uri);
-                        fs.writeFileSync(dir[0] + '/' + img_name, res.body);
-                        console.log( i += 1);
-                        console.log(img_name, ' OK');
-                        write(img_name); 
+                        let img_name = decodeURIComponent(uri.split('/').slice(-1))
+                        if (img_name != '') {
+                            let res = request("GET", uri);
+                            fs.writeFileSync(dir[0] + '/' + img_name, res.body);
+                            console.log( i += 1);
+                            console.log(img_name, ' OK');
+                            write(img_name);
+                        } else {
+                            console.log('empty line');
+                        } 
                     }); 
                 };
                 console.log(file[0])

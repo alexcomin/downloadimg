@@ -1,30 +1,24 @@
-const {app, BrowserWindow, dialog, Menu} = require('electron')
+const {app, BrowserWindow, dialog, Menu, ipcMain} = require('electron')
 
-const template = [
-  {
-    label: 'About',
-    submenu: [
-      {
-        label: 'О программе',
-        click: function () {
-          alert('test');
-        }
-      }
-    ]
-  }
-];
-const menu = Menu.buildFromTemplate(template);
-Menu.setApplicationMenu(menu);
-let win;
+let win, winAbout
 
 function createWindow () {
-  win = new BrowserWindow({width: 800, height: 600});
+  win = new BrowserWindow({width: 800, height: 600, maxWidth: 800, maxHeight: 600});
   win.loadURL(`file://${__dirname}/index.html`);
   win.webContents.openDevTools();
+  win.setMenu(null)
   win.on('closed', () => {
     win = null;
-    });
+  });
 }
+
+function aboutWindow() {
+  winAbout = new BrowserWindow({width: 400, height: 400})
+  winAbout.loadURL(`file://${__dirname}/main.html`)
+  winAbout.setMenu(null)
+}
+
+ipcMain.on('open', aboutWindow)
 
 app.on('ready', createWindow);
 
